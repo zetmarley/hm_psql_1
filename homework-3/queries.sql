@@ -5,7 +5,8 @@ SELECT c.company_name, CONCAT(first_name, ' ', last_name)
 FROM orders as o
 JOIN customers as c USING(customer_id)
 JOIN employees as e USING(employee_id)
-WHERE c.city = e.city and o.ship_via = 2
+JOIN shippers as s ON o.ship_via=s.shipper_id
+WHERE c.city = e.city and s.company_name = 'United Package'
 
 -- 2. Наименование продукта, количество товара (product_name и units_in_stock в табл products),
 -- имя поставщика и его телефон (contact_name и phone в табл suppliers) для таких продуктов,
@@ -17,14 +18,12 @@ JOIN suppliers AS s USING(supplier_id)
 JOIN categories AS c USING(category_id)
 WHERE discontinued = 0
 AND units_in_stock < 25
-AND (c.category_name = 'Dairy Products'
-	or c.category_name = 'Condiments')
+AND c.category_name in ('Dairy Products', 'Condiments')
 ORDER BY units_in_stock
 
 -- 3. Список компаний заказчиков (company_name из табл customers), не сделавших ни одного заказа
 select company_name from customers
-where customer_id = any(select customer_id from customers except
-select distinct customer_id from orders)
+where customer_id not in (select distinct customer_id from orders)
 
 -- 4. уникальные названия продуктов, которых заказано ровно 10 единиц (количество заказанных единиц см в колонке quantity табл order_details)
 -- Этот запрос написать именно с использованием подзапроса.
